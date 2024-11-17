@@ -9,6 +9,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 # Set up Chrome options and WebDriver
 options = Options()
 options.add_argument("--headless")  # Run in headless mode
+options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")  # Add User-Agent
 options.add_argument("--disable-gpu")  # Disable GPU for headless mode
 
 # Initialize the Chrome WebDriver with WebDriver Manager
@@ -18,11 +19,15 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 url = "https://toffeelive.com/en/live"  # Replace with your actual URL
 driver.get(url)
 
-# Wait for the page to load completely (adjust time if necessary)
-time.sleep(10)
+# Wait for the page to load completely (increase the time to ensure full load)
+time.sleep(15)
 
 # Scrape the page source
 page_source = driver.page_source
+
+# Debug: Print the page source to check if it's loaded correctly
+with open("page_source.html", "w") as f:
+    f.write(page_source)
 
 # Extract unique m3u8 URLs from the desired domain only
 m3u8_urls = list(
@@ -31,6 +36,9 @@ m3u8_urls = list(
         if "bldcmprod-cdn.toffeelive.com" in url
     )
 )
+
+# Debug: Print out the m3u8 URLs found
+print(f"Found m3u8 URLs: {m3u8_urls}")
 
 # Extract the full Edge-Cache-Cookie with its prefix
 cookie_match = re.search(r'Edge-Cache-Cookie=([^;\\]+)', page_source)
@@ -55,3 +63,4 @@ with open('playlist.m3u', 'w') as file:
 # Debug: Print the file content to verify
 with open('playlist.m3u', 'r') as file:
     print(file.read())
+
