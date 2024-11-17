@@ -2,50 +2,56 @@ name: Update M3U Playlist
 
 on:
   schedule:
-    - cron: '*/2 * * * *'  # Runs every 2 minutes
-  workflow_dispatch:  # Allows manual trigger from GitHub UI
+    - cron: '*/2 * * * *'  # This runs every 2 minutes
+  workflow_dispatch:  # This allows you to manually trigger the workflow
 
 jobs:
-  update-m3u-playlist:
+  update-playlist:
     runs-on: ubuntu-latest
 
     steps:
+    # Checkout the repository to work on it
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
+    # Set up Python and install dependencies
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v3
       with:
-        python-version: '3.12'
+        python-version: '3.x'
 
-    - name: Install system dependencies
+    - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y wget curl unzip
-        sudo apt-get install -y google-chrome-stable
-        sudo apt-get install -y chromium-chromedriver
+        pip install selenium webdriver-manager
 
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install selenium
-        pip install webdriver-manager
-
+    # Run the scraper script to update the M3U file
     - name: Run scraper script
       run: |
         python scraper.py  # Executes your scraper script
 
-    - name: Configure Git
+    # Debug: Check if playlist.m3u was created or modified
+    - name: Check if playlist.m3u was created or modified
+      run: |
+        ls -l playlist.m3u  # Check if the file exists and its size
+        cat playlist.m3u    # Output the file's contents
+
+    # Ensure the file has correct permissions
+    - name: Set proper file permissions
+      run: |
+        chmod 644 playlist.m3u  # Make sure it's readable and writable
+
+    # Add changes to Git, commit, and push
+    - name: Commit and push updated playlist.m3u
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
-
-    - name: Commit and push updated playlist.m3u
-      run: |
-        git add playlist.m3u
-        git commit -m "Update playlist.m3u"
+        git add -f playlist.m3u  # Force add if Git is not detecting changes
+        git commit -m "Update playlist.m3u" || echo "No changes to commit"
         git push
 
-    - name: Check file contents (for debugging)
+    # Optional: Create a dummy line if no m3u was added
+    - name: Add a dummy line to playlist.m3u if empty
       run: |
-        cat playlist.m3u  # This helps verify if the file is being written correctly
+        if [ ! -s playlist.m3u ]; then
+          echo "# Dummy Line" >> playlist.m3u
+        fi
