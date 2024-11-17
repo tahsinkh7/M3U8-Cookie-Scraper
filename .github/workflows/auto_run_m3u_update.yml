@@ -1,0 +1,4 @@
+your-repository/
+└── .github/
+    └── workflows/
+        └── auto_run_m3u_update.yml  # This is the GitHub Actions workflow file
