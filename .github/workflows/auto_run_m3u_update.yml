@@ -37,7 +37,7 @@ jobs:
         run: |
           python scraper.py  # Replace with the name of your Python script
 
-      # Step 6: Commit and push the updated M3U playlist (optional)
+      # Step 6: Commit and push the updated M3U playlist
       - name: Commit and push the updated M3U playlist
         uses: EndBug/add-and-commit@v9
         with:
