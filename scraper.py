@@ -23,10 +23,6 @@ time.sleep(10)
 # Scrape the page source
 page_source = driver.page_source
 
-# Debugging: Save the page source to a file to inspect later
-with open("page_source_debug.html", "w") as f:
-    f.write(page_source)
-
 # Extract unique m3u8 URLs from the desired domain only
 m3u8_urls = list(
     set(
@@ -35,27 +31,23 @@ m3u8_urls = list(
     )
 )
 
-# Debug: Print out the m3u8 URLs found to confirm they are extracted
-print(f"Found m3u8 URLs: {m3u8_urls}")
-
 # Extract the full Edge-Cache-Cookie with its prefix
 cookie_match = re.search(r'Edge-Cache-Cookie=([^;\\]+)', page_source)
 edge_cache_cookie = f"Edge-Cache-Cookie={cookie_match.group(1)}" if cookie_match else "Edge-Cache-Cookie=Not Available"
 
 # Write the M3U playlist to a file
 with open('playlist.m3u', 'w') as f:
-    if m3u8_urls:
-        for m3u8_url in m3u8_urls:
-            # Extract the channel name from the URL (you can customize this if needed)
-            channel_name = m3u8_url.split("/")[-2]  # Channel name based on URL structure
-            f.write(f'#EXTINF:-1, {channel_name} \n')
-            f.write(f'#EXTVLCOPT:http-user-agent=Toffee (Linux;Android 14) AndroidXMedia3/1.1.1/64103898/4d2ec9b8c7534adc\n')
-            f.write(f'#EXTHTTP:{{"cookie":"{edge_cache_cookie}"}}\n')
-            f.write(f'{m3u8_url}\n\n')
-
-        print("M3U playlist updated and saved to 'playlist.m3u'")
-    else:
-        print("No m3u8 URLs found.")
+    for m3u8_url in m3u8_urls:
+        # Extract the channel name from the URL (you can customize this if needed)
+        channel_name = m3u8_url.split("/")[-2]  # Channel name based on URL structure
+        f.write(f'#EXTINF:-1, {channel_name} \n')
+        f.write(f'#EXTVLCOPT:http-user-agent=Toffee (Linux;Android 14) AndroidXMedia3/1.1.1/64103898/4d2ec9b8c7534adc\n')
+        f.write(f'#EXTHTTP:{{"cookie":"{edge_cache_cookie}"}}\n')
+        f.write(f'{m3u8_url}\n\n')
 
 # Close the WebDriver
 driver.quit()
+
+print("M3U playlist updated and saved to 'playlist.m3u'")
+
+
