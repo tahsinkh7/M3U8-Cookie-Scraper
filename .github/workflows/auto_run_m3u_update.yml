@@ -2,7 +2,7 @@ name: Auto Update M3U Playlist
 
 on:
   schedule:
-    - cron: "*/1 * * * *"  # This runs every 2 minutes
+    - cron: "*/2 * * * *"  # This runs every 2 minutes
   workflow_dispatch:  # This allows manual triggering
 
 jobs:
@@ -33,7 +33,6 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git add playlist.m3u
           git commit -m "Update playlist.m3u"
-          git push
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
