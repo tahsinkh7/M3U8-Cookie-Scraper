@@ -2,7 +2,7 @@ name: Auto Update M3U Playlist
 
 on:
   schedule:
-    - cron: "*/2 * * * *"  # This runs every 2 minutes
+    - cron: "* * * * *"  # This runs every 2 minutes
   workflow_dispatch:  # This allows manual triggering
 
 jobs:
