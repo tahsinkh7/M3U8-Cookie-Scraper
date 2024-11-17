@@ -2,40 +2,50 @@ name: Update M3U Playlist
 
 on:
   schedule:
-    # Run every 2 minutes
-    - cron: '* * * * *'
-
-  push:
-    branches:
-      - main
+    - cron: '*/2 * * * *'  # Runs every 2 minutes
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
 
 jobs:
-  update-playlist:
+  update-m3u-playlist:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.12
+        python-version: '3.12'
 
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install -y wget curl unzip
+        sudo apt-get install -y google-chrome-stable
+        sudo apt-get install -y chromium-chromedriver
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
         pip install selenium
         pip install webdriver-manager
 
-    - name: Run Python scraper to update playlist
+    - name: Run scraper script
       run: |
-        python scraper.py
+        python scraper.py  # Executes your scraper script
 
-    - name: Commit and push updated playlist.m3u
+    - name: Configure Git
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
+
+    - name: Commit and push updated playlist.m3u
+      run: |
         git add playlist.m3u
-        git status  # This will show if there are changes in playlist.m3u
-        git commit -m "Update playlist.m3u" || echo "No changes to commit"
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+        git commit -m "Update playlist.m3u"
+        git push
+
+    - name: Check file contents (for debugging)
+      run: |
+        cat playlist.m3u  # This helps verify if the file is being written correctly
