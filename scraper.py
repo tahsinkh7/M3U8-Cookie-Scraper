@@ -1,6 +1,5 @@
 import re
 import time
-import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -9,7 +8,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 # Set up Chrome options and WebDriver
 options = Options()
 options.add_argument("--headless")  # Run in headless mode
-options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")  # Add User-Agent
 options.add_argument("--disable-gpu")  # Disable GPU for headless mode
 
 # Initialize the Chrome WebDriver with WebDriver Manager
@@ -19,14 +17,14 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 url = "https://toffeelive.com/en/live"  # Replace with your actual URL
 driver.get(url)
 
-# Wait for the page to load completely (increase the time to ensure full load)
-time.sleep(15)
+# Wait for the page to load completely (adjust time if necessary)
+time.sleep(10)
 
 # Scrape the page source
 page_source = driver.page_source
 
-# Debug: Print the page source to check if it's loaded correctly
-with open("page_source.html", "w") as f:
+# Debugging: Save the page source to a file to inspect later
+with open("page_source_debug.html", "w") as f:
     f.write(page_source)
 
 # Extract unique m3u8 URLs from the desired domain only
@@ -37,30 +35,27 @@ m3u8_urls = list(
     )
 )
 
-# Debug: Print out the m3u8 URLs found
+# Debug: Print out the m3u8 URLs found to confirm they are extracted
 print(f"Found m3u8 URLs: {m3u8_urls}")
 
 # Extract the full Edge-Cache-Cookie with its prefix
 cookie_match = re.search(r'Edge-Cache-Cookie=([^;\\]+)', page_source)
 edge_cache_cookie = f"Edge-Cache-Cookie={cookie_match.group(1)}" if cookie_match else "Edge-Cache-Cookie=Not Available"
 
-# Close the WebDriver
-driver.quit()
-
-# Create the m3u file
-with open('playlist.m3u', 'w') as file:
+# Write the M3U playlist to a file
+with open('playlist.m3u', 'w') as f:
     if m3u8_urls:
         for m3u8_url in m3u8_urls:
-            # Example for extracting the channel name from the URL
-            channel_name = m3u8_url.split('/')[-2]  # Adjust this according to the actual URL structure
-            file.write(f'#EXTINF:-1, {channel_name}\n')
-            file.write('#EXTVLCOPT:http-user-agent=Toffee (Linux;Android 14) AndroidXMedia3/1.1.1/64103898/4d2ec9b8c7534adc\n')
-            file.write(f'#EXTHTTP:{{"cookie":"{edge_cache_cookie}"}}\n')
-            file.write(f'{m3u8_url}\n')
+            # Extract the channel name from the URL (you can customize this if needed)
+            channel_name = m3u8_url.split("/")[-2]  # Channel name based on URL structure
+            f.write(f'#EXTINF:-1, {channel_name} \n')
+            f.write(f'#EXTVLCOPT:http-user-agent=Toffee (Linux;Android 14) AndroidXMedia3/1.1.1/64103898/4d2ec9b8c7534adc\n')
+            f.write(f'#EXTHTTP:{{"cookie":"{edge_cache_cookie}"}}\n')
+            f.write(f'{m3u8_url}\n\n')
+
+        print("M3U playlist updated and saved to 'playlist.m3u'")
     else:
         print("No m3u8 URLs found.")
 
-# Debug: Print the file content to verify
-with open('playlist.m3u', 'r') as file:
-    print(file.read())
-
+# Close the WebDriver
+driver.quit()
