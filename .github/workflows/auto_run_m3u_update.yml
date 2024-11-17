@@ -3,7 +3,7 @@ name: Auto Update M3U Playlist
 on:
   schedule:
     # Runs every 2 minutes based on UTC timezone (GitHub Actions uses UTC)
-    - cron: '*/2 * * * *'  # This will run every 2 minutes
+    - cron: '*/1 * * * *'  # This will run every 2 minutes
 
   workflow_dispatch:  # Allows you to manually trigger the workflow
 
