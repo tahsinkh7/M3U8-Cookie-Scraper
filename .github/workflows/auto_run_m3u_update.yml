@@ -1,38 +1,41 @@
-name: Auto Update M3U Playlist
+name: Update M3U Playlist
 
 on:
   schedule:
-    - cron: "* * * * *"  # This runs every 2 minutes
-  workflow_dispatch:  # This allows manual triggering
+    # Run every 2 minutes
+    - cron: '* * * * *'
+
+  push:
+    branches:
+      - main
 
 jobs:
-  update-m3u:
+  update-playlist:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout the repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install selenium webdriver-manager
+    - name: Install dependencies
+      run: |
+        pip install selenium
+        pip install webdriver-manager
 
-      - name: Run Python script
-        run: |
-          python scraper.py
+    - name: Run Python scraper to update playlist
+      run: |
+        python scraper.py
 
-      - name: Commit and push updated playlist.m3u
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git add playlist.m3u
-          git commit -m "Update playlist.m3u"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Commit and push updated playlist.m3u
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add playlist.m3u
+        git status  # This will show if there are changes in playlist.m3u
+        git commit -m "Update playlist.m3u" || echo "No changes to commit"
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
