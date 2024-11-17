@@ -1,5 +1,6 @@
 import re
 import time
+import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -35,17 +36,22 @@ m3u8_urls = list(
 cookie_match = re.search(r'Edge-Cache-Cookie=([^;\\]+)', page_source)
 edge_cache_cookie = f"Edge-Cache-Cookie={cookie_match.group(1)}" if cookie_match else "Edge-Cache-Cookie=Not Available"
 
-# Write the M3U playlist to a file
-with open('playlist.m3u', 'w') as f:
-    for m3u8_url in m3u8_urls:
-        # Extract the channel name from the URL (you can customize this if needed)
-        channel_name = m3u8_url.split("/")[-2]  # Channel name based on URL structure
-        f.write(f'#EXTINF:-1, {channel_name} \n')
-        f.write(f'#EXTVLCOPT:http-user-agent=Toffee (Linux;Android 14) AndroidXMedia3/1.1.1/64103898/4d2ec9b8c7534adc\n')
-        f.write(f'#EXTHTTP:{{"cookie":"{edge_cache_cookie}"}}\n')
-        f.write(f'{m3u8_url}\n\n')
-
 # Close the WebDriver
 driver.quit()
 
-print("M3U playlist updated and saved to 'playlist.m3u'")
+# Create the m3u file
+with open('playlist.m3u', 'w') as file:
+    if m3u8_urls:
+        for m3u8_url in m3u8_urls:
+            # Example for extracting the channel name from the URL
+            channel_name = m3u8_url.split('/')[-2]  # Adjust this according to the actual URL structure
+            file.write(f'#EXTINF:-1, {channel_name}\n')
+            file.write('#EXTVLCOPT:http-user-agent=Toffee (Linux;Android 14) AndroidXMedia3/1.1.1/64103898/4d2ec9b8c7534adc\n')
+            file.write(f'#EXTHTTP:{{"cookie":"{edge_cache_cookie}"}}\n')
+            file.write(f'{m3u8_url}\n')
+    else:
+        print("No m3u8 URLs found.")
+
+# Debug: Print the file content to verify
+with open('playlist.m3u', 'r') as file:
+    print(file.read())
